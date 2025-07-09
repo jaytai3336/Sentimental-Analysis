@@ -37,7 +37,7 @@ def get_results(stop):
         
     return True
 
-stop = "Jan 1, 2025"
+stop = "November 6, 2024"
 c = True
 
 try:
@@ -52,7 +52,7 @@ except Exception as e:
 finally:
     print("Saving results and quitting driver...")
     print(results.tail())
-    results.to_csv('data/News Articles/trump_social_results.csv', index=False)
+    results.to_csv('data/News Articles/trump_social_results2.csv', index=False)
     driver.quit()
 
 
