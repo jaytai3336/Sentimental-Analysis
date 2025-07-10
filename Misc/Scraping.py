@@ -10,6 +10,7 @@ PATH = 'c:\\Users\\Jay Tai\\Downloads\\edgedriver_win32\\msedgedriver.exe'
 service = Service(PATH)
 options = webdriver.EdgeOptions()
 options.add_argument('--headless')
+options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115 Safari/537.36')
 driver = webdriver.Edge(service=service, options=options)
 
 driver.get("https://rollcall.com/factbase/trump/topic/social/")
@@ -30,6 +31,7 @@ def get_results(stop):
 
         if result_text not in results['text'].values and 'https://' not in result_text: 
             results.loc[len(results)] = [result_datetime, result_text, rt]
+            print(result_datetime)
     
         if stop in result_datetime:
             print("Reached the end date")
