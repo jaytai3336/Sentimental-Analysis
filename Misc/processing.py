@@ -5,8 +5,11 @@ from nltk import word_tokenize, pos_tag, ne_chunk
 from nltk.tree import Tree
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+from tqdm import tqdm
 
-df = pd.read_csv('./data/News Articles/raw/trump_social_results2.csv')
+tqdm.pandas()
+
+df = pd.read_csv('./data/News Articles/processed/trump_processed.csv')
 nltk.download("punkt")
 nltk.download("averaged_perceptron_tagger_eng")
 nltk.download("maxent_ne_chunker_tab")
@@ -69,6 +72,6 @@ def preprocess(text):
     return " ".join(fin_phrases + named_entities + other_tokens)
 
 
-df['processed_text'] = df['text'].apply(preprocess)
+df['processed_text'] = df['text'].progress_apply(preprocess)
 
 df.to_csv('./data/News Articles/processed/trump_processed.csv')
