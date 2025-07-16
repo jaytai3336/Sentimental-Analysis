@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 tqdm.pandas()
 
-df = pd.read_csv('./data/News Articles/processed/trump_processed.csv')
+df = pd.read_csv('./data/News Articles/Grok/headlines_with_sentiment.csv')
 nltk.download("punkt")
 nltk.download("averaged_perceptron_tagger_eng")
 nltk.download("maxent_ne_chunker_tab")
@@ -72,6 +72,6 @@ def preprocess(text):
     return " ".join(fin_phrases + named_entities + other_tokens)
 
 
-df['processed_text'] = df['text'].progress_apply(preprocess)
+df['processed_text'] = df['Headline'].progress_apply(preprocess)
 
-df.to_csv('./data/News Articles/processed/trump_processed.csv')
+df.to_csv('./data/News Articles/processed/grok_processed.csv')
