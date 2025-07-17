@@ -108,6 +108,7 @@ This repository contains a comprehensive pipeline for performing sentiment analy
         ├── Traditional ML models.ipynb
         ├── Trump tweet analysis.ipynb
     └── README.md
+    └── requirements.txt
 ```
 
 
