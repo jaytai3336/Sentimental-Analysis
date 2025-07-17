@@ -6,19 +6,22 @@ from selenium.webdriver.common.by import By
 import time
 import pandas as pd
 
-PATH = 'c:\\Users\\Jay Tai\\Downloads\\edgedriver_win32\\msedgedriver.exe'
+# Change entire chunk of code to your driver
+PATH = ""
 service = Service(PATH)
 options = webdriver.EdgeOptions()
 options.add_argument('--headless')
 options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115 Safari/537.36')
 driver = webdriver.Edge(service=service, options=options)
 
+# Change website
 driver.get("https://rollcall.com/factbase/trump/topic/social/")
 
 time.sleep(5)
 
 results = pd.DataFrame(columns=['datetime', 'text', 'isRetweet'])
 
+# Change results retrieval logic accordingly
 def get_results(stop):
     result_container = driver.find_element(By.CSS_SELECTOR, '.page.page-id-749153.wp-embed-responsive.factbase-twitter').find_element(By.ID, 'app').find_element(By.CLASS_NAME, 'p-0.m-0.leading-4.text-black.align-baseline.border-0.duration-300').find_element(By.ID, 'main').find_element(By.ID, 'app').find_element(By.CSS_SELECTOR, '.w-full.px-4.md\\:px-0').find_element(By.CSS_SELECTOR, '.m-auto.bg-white\\/80.p-4.shadow-xl.rounded-2xl').find_element(By.CSS_SELECTOR, '.max-w-7xl.mx-auto.px-4.md\\:px-0').find_element(By.CLASS_NAME,'results-container').find_elements(By.CSS_SELECTOR,'.block.mb-8.rounded-xl.border')
     for i in result_container:
@@ -57,6 +60,6 @@ finally:
     results.to_csv('data/News Articles/trump_social_results2.csv', index=False)
     driver.quit()
 
-
+# Save the file accordingly
 
 

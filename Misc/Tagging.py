@@ -15,7 +15,8 @@ from sklearn.cluster import KMeans
 import spacy
 import numpy as np
 
-df = pd.read_csv('./data/News Articles/processed/trump_processed.csv', index_col='datetime')[0:310]
+# Change accordingly (use gpu from cloud server to run this)
+df = pd.read_csv('./data/News Articles/processed/trump_processed.csv', index_col='datetime')
 
 GROUPS = {
     "Financial Markets": [
@@ -182,7 +183,7 @@ finally:
         results_df = pd.concat([results_df, topic_binarized], axis=1)
         results_df_merged = df.merge(results_df, left_on='processed_text', right_on='text', how='left')
 
-        # Save results
+        # Save results Change accordingly
         results_df_merged.to_csv("trump_analysed1.csv", index=True)
         print("✅ Data saved successfully.")
     else:

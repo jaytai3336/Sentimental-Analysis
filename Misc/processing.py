@@ -6,9 +6,9 @@ from nltk.tree import Tree
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from tqdm import tqdm
-
 tqdm.pandas()
 
+# edit this
 df = pd.read_csv('./data/News Articles/Grok/headlines_with_sentiment.csv')
 nltk.download("punkt")
 nltk.download("averaged_perceptron_tagger_eng")
@@ -74,4 +74,5 @@ def preprocess(text):
 
 df['processed_text'] = df['Headline'].progress_apply(preprocess)
 
+# Change this
 df.to_csv('./data/News Articles/processed/grok_processed.csv')
