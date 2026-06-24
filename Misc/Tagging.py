@@ -5,8 +5,6 @@ from nltk import word_tokenize, pos_tag, ne_chunk
 from nltk.tree import Tree
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-import pandas as pd
-import re
 import torch
 from tqdm import tqdm
 from transformers import pipeline, set_seed, AutoTokenizer, AutoModel
@@ -147,7 +145,7 @@ try:
             # Keyword matching
             matched_keywords = []
             for label in topics:
-                matched_keywords.extend([kw for kw in GROUPS[label] if re.search(rf"\\b{re.escape(kw)}\\b", sentence.lower())])
+                matched_keywords.extend([kw for kw in GROUPS[label] if re.search(rf"\b{re.escape(kw)}\b", sentence.lower())])
 
             # Embedding
             emb = get_embedding(sentence)
