@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="description" content="NLP Sentiment Analysis for Equity Signal Generation — Jay Tai"/>
+<title>Sentiment Analysis — Jay Tai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#060c13;--bg2:#0a1118;--bg3:#111c27;--border:rgba(56,189,248,.09);--text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;--accent:#38bdf8;--accent2:#f59e0b;--green:#34d399;--red:#f87171;--a10:rgba(56,189,248,.1);--mono:'Fira Code',monospace;--font:'Inter',system-ui,sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
+::selection{background:rgba(56,189,248,.2);color:var(--accent)}
+header{position:sticky;top:0;z-index:50;background:rgba(6,12,19,.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+nav{max-width:1100px;margin:0 auto;padding:0 clamp(1rem,4vw,2rem);height:60px;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.nav-back{font-family:var(--mono);font-size:.8rem;color:var(--muted);transition:color .25s}.nav-back:hover{color:var(--accent)}
+.nav-title{font-size:.85rem;font-weight:600;color:var(--text);text-align:center}
+.nav-gh{font-family:var(--mono);font-size:.78rem;color:var(--muted);border:1px solid var(--border);padding:.3rem .8rem;border-radius:6px;transition:all .25s}.nav-gh:hover{border-color:var(--accent);color:var(--accent)}
+.hero{padding:clamp(3rem,8vw,5rem) clamp(1rem,4vw,2rem);max-width:1100px;margin:0 auto;text-align:center}
+.hero-tag{font-family:var(--mono);font-size:.78rem;color:var(--accent2);letter-spacing:.08em;display:block;margin-bottom:1rem}
+.hero-title{font-size:clamp(1.8rem,5vw,3rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:1rem;background:linear-gradient(140deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-desc{color:var(--muted2);font-size:clamp(.9rem,2vw,1.05rem);max-width:640px;margin:0 auto 2.5rem;line-height:1.75}
+.stat-row{display:flex;justify-content:center;flex-wrap:wrap;gap:1.5rem}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.6rem;text-align:center;min-width:130px}
+.stat-val{font-family:var(--mono);font-size:1.35rem;font-weight:700;display:block;line-height:1.2}
+.stat-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:.25rem;display:block}
+.val-green{color:var(--green)}.val-amber{color:var(--accent2)}.val-blue{color:var(--accent)}
+.section{padding:clamp(2.5rem,6vw,4rem) clamp(1rem,4vw,2rem);max-width:1100px;margin:0 auto}
+.bg-alt{background:var(--bg2)}
+.sec-tag{font-family:var(--mono);font-size:.72rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:.5rem}
+.sec-title{font-size:clamp(1.2rem,3vw,1.6rem);font-weight:700;letter-spacing:-.02em;margin-bottom:1.5rem}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem}
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:1.25rem}
+.card-title{font-size:.85rem;font-weight:700;color:var(--accent);font-family:var(--mono);margin-bottom:.5rem}
+.card-body{font-size:.875rem;color:var(--muted2);line-height:1.65}.card-body strong{color:var(--text)}
+
+/* Live analyser */
+.analyser{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:1.75rem}
+.analyser-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:1rem;color:var(--text);font-family:var(--font);font-size:.92rem;resize:vertical;min-height:100px;outline:none;transition:border-color .25s}
+.analyser-input:focus{border-color:var(--accent)}
+.analyser-row{display:flex;gap:.75rem;align-items:center;margin-top:.75rem;flex-wrap:wrap}
+.analyse-btn{padding:.5rem 1.25rem;background:var(--accent);color:#060c13;border:none;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:var(--mono);transition:all .25s}.analyse-btn:hover{background:#7dd3fc}
+.example-btn{padding:.4rem .85rem;border:1px solid var(--border);color:var(--muted2);background:transparent;border-radius:7px;font-size:.78rem;cursor:pointer;font-family:var(--mono);transition:all .25s}.example-btn:hover{border-color:var(--accent);color:var(--accent)}
+.result-area{margin-top:1.25rem;display:none}
+.result-area.show{display:block}
+.sentiment-bar-wrap{margin-bottom:1rem}
+.bar-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-bottom:.35rem}
+.bar-track{height:10px;background:var(--bg);border-radius:5px;overflow:hidden;display:flex}
+.bar-neg{background:var(--red);height:100%;border-radius:5px 0 0 5px;transition:width .5s ease}
+.bar-neu{background:var(--muted);height:100%;transition:width .5s ease}
+.bar-pos{background:var(--green);height:100%;border-radius:0 5px 5px 0;transition:width .5s ease}
+.sentiment-label{font-size:1.1rem;font-weight:700;font-family:var(--mono);margin-bottom:.35rem}
+.sentiment-score{font-size:.82rem;color:var(--muted2);font-family:var(--mono);margin-bottom:1rem}
+.word-box{font-size:.875rem;line-height:1.85;color:var(--muted2)}
+.w-pos{color:var(--green);font-weight:600}.w-neg{color:var(--red);font-weight:600}.w-neu{color:var(--muted2)}
+
+/* Model comparison */
+.model-bars{display:flex;flex-direction:column;gap:.75rem}
+.model-row{display:grid;grid-template-columns:140px 1fr 60px;align-items:center;gap:.75rem}
+.model-name{font-family:var(--mono);font-size:.78rem;color:var(--muted2)}
+.model-track{height:22px;background:var(--bg);border-radius:5px;overflow:hidden;position:relative}
+.model-fill{height:100%;border-radius:5px;transition:width .8s ease;display:flex;align-items:center;padding-left:.5rem;font-family:var(--mono);font-size:.68rem;font-weight:600;color:#060c13}
+.model-pct{font-family:var(--mono);font-size:.8rem;font-weight:700;text-align:right}
+
+.results-table{width:100%;border-collapse:collapse;font-size:.875rem}
+.results-table th{text-align:left;padding:.6rem 1rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-family:var(--mono);border-bottom:1px solid var(--border)}
+.results-table td{padding:.7rem 1rem;border-bottom:1px solid rgba(56,189,248,.05);color:var(--muted2)}
+.results-table td:first-child{font-weight:600;color:var(--text)}
+.results-table tr:hover td{background:rgba(56,189,248,.04)}
+.badge{display:inline-block;font-family:var(--mono);font-size:.62rem;padding:.15rem .45rem;border-radius:4px;letter-spacing:.04em}
+.badge-green{color:var(--green);background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2)}
+.badge-amber{color:var(--accent2);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2)}
+.badge-blue{color:var(--accent);background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2)}
+
+footer{padding:2rem;text-align:center;border-top:1px solid var(--border);background:var(--bg)}
+footer p{font-size:.82rem;color:var(--muted)}footer a{color:var(--accent)}
+@media(max-width:600px){.nav-title{display:none}.model-row{grid-template-columns:100px 1fr 50px}}
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a class="nav-back" href="https://jaytai3336.github.io">← Portfolio</a>
+    <span class="nav-title">Sentiment Analysis</span>
+    <a class="nav-gh" href="https://github.com/jaytai3336/Sentimental-Analysis" target="_blank" rel="noopener">GitHub ↗</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <span class="hero-tag">// nlp · signal generation · equity prediction</span>
+  <h1 class="hero-title">NLP Sentiment Analysis<br/>for Equity Signal Generation</h1>
+  <p class="hero-desc">End-to-end pipeline scraping Bloomberg articles and social media to generate SPY trading signals — comparing VADER, traditional ML, and transformer-based models (FinBERT, RoBERTa, DistilBERT).</p>
+  <div class="stat-row">
+    <div class="stat-card"><span class="stat-val val-green">77%</span><span class="stat-label">LSTM Accuracy</span></div>
+    <div class="stat-card"><span class="stat-val val-blue">6</span><span class="stat-label">Models Compared</span></div>
+    <div class="stat-card"><span class="stat-val val-amber">2006–25</span><span class="stat-label">Backtest Window</span></div>
+    <div class="stat-card"><span class="stat-val val-green">SPY</span><span class="stat-label">Target Instrument</span></div>
+  </div>
+</div>
+
+<div class="bg-alt">
+<div class="section">
+  <span class="sec-tag">02. Live Demo</span>
+  <h2 class="sec-title">Try the Sentiment Analyser</h2>
+  <div class="analyser">
+    <textarea class="analyser-input" id="inputText" placeholder="Paste a financial headline or news snippet here…"></textarea>
+    <div class="analyser-row">
+      <button class="analyse-btn" id="analyseBtn">Analyse →</button>
+      <button class="example-btn" data-text="Federal Reserve signals three rate cuts in 2025 as inflation cools toward 2% target, boosting equity market outlook">Bullish example</button>
+      <button class="example-btn" data-text="Banking sector faces severe credit losses as commercial real estate defaults surge to decade highs amid rising interest rates">Bearish example</button>
+      <button class="example-btn" data-text="Quarterly earnings season begins with mixed results as companies report revenue growth but margin compression">Neutral example</button>
+    </div>
+    <div class="result-area" id="resultArea">
+      <div class="sentiment-label" id="sentLabel"></div>
+      <div class="sentiment-score" id="sentScore"></div>
+      <div class="bar-labels"><span>Bearish</span><span>Neutral</span><span>Bullish</span></div>
+      <div class="bar-track">
+        <div class="bar-neg" id="barNeg" style="width:0%"></div>
+        <div class="bar-neu" id="barNeu" style="width:0%"></div>
+        <div class="bar-pos" id="barPos" style="width:0%"></div>
+      </div>
+      <div style="margin-top:1rem;font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.4rem">Highlighted tokens</div>
+      <div class="word-box" id="wordBox"></div>
+      <div style="margin-top:.75rem;font-family:var(--mono);font-size:.68rem;color:var(--muted)">Note: live demo uses a financial lexicon scorer. Full pipeline uses FinBERT / RoBERTa.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="section">
+  <span class="sec-tag">01. Methodology</span>
+  <h2 class="sec-title">Pipeline Architecture</h2>
+  <div class="card-grid">
+    <div class="card"><div class="card-title">Data Collection</div><div class="card-body">Selenium scraping of <strong>Bloomberg articles</strong> and Trump tweets. Text preprocessing via spaCy & NLTK — tokenisation, lemmatisation, named entity recognition.</div></div>
+    <div class="card"><div class="card-title">Sentiment Models</div><div class="card-body">Rule-based: <strong>VADER</strong>. Traditional ML: <strong>SVM, Naive Bayes</strong>. Transformers: <strong>FinBERT, DistilBERT, Flair, RoBERTa</strong>. LSTM as sequence learner.</div></div>
+    <div class="card"><div class="card-title">Topic Modelling</div><div class="card-body"><strong>Latent Dirichlet Allocation (LDA)</strong> for topic clustering, segmented by sentiment classification with interactive pyLDAvis visualisations.</div></div>
+    <div class="card"><div class="card-title">Backtesting</div><div class="card-body">Sentiment signals drive <strong>SPY long/short decisions</strong>, backtested against historical 2006–2025 OHLCV data. Strategy performance vs buy-and-hold comparison.</div></div>
+  </div>
+</div>
+
+<div class="bg-alt">
+<div class="section">
+  <span class="sec-tag">03. Results</span>
+  <h2 class="sec-title">Model Performance Comparison</h2>
+  <div class="model-bars" id="modelBars"></div>
+  <div style="margin-top:2rem;overflow-x:auto">
+    <table class="results-table">
+      <thead><tr><th>Model</th><th>Type</th><th>Accuracy</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>LSTM</td><td>Deep Learning</td><td>77%</td><td><span class="badge badge-green">Best</span></td></tr>
+        <tr><td>FinBERT</td><td>Transformer</td><td>~74%</td><td><span class="badge badge-blue">Finance-tuned</span></td></tr>
+        <tr><td>RoBERTa</td><td>Transformer</td><td>~72%</td><td><span class="badge badge-blue">Robust BERT</span></td></tr>
+        <tr><td>DistilBERT</td><td>Transformer</td><td>~70%</td><td><span class="badge badge-amber">Distilled</span></td></tr>
+        <tr><td>SVM</td><td>Traditional ML</td><td>~65%</td><td>TF-IDF features</td></tr>
+        <tr><td>Naive Bayes</td><td>Traditional ML</td><td>~62%</td><td>Baseline</td></tr>
+        <tr><td>VADER</td><td>Rule-Based</td><td>~55%</td><td>Zero-shot baseline</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<footer>
+  <p>A project by <a href="https://jaytai3336.github.io">Jay Tai</a> &nbsp;·&nbsp; NUS Quantitative Finance &nbsp;·&nbsp; <a href="https://github.com/jaytai3336/Sentimental-Analysis" target="_blank" rel="noopener">View Code on GitHub</a></p>
+</footer>
+
+<script>
+// Financial lexicon
+const POS_WORDS={bullish:2,surge:1.5,rally:1.5,gain:1,rises:1,positive:1,growth:1.2,strong:1,outperform:1.5,upgrade:1.5,beat:1.3,record:1,recovery:1.2,profit:1.2,dividend:1,exceeded:1.3,cut:1,rate:0.3,inflation:-.2,cools:1,boost:1.2,optimism:1.5,soars:2,upside:1.3,exceeded:1.2,breakout:1.5,momentum:1};
+const NEG_WORDS={bearish:-2,crash:-2,decline:-1.5,fall:-1,losses:-1.5,default:-1.8,debt:-1,risk:-1,recession:-2,downgrade:-1.5,miss:-1.3,writedown:-1.5,layoffs:-1.2,bankruptcy:-2,negative:-1,weak:-1,pressure:-1,concern:-1,fears:-1.5,volatility:-.8,surge:-1,inflation:-.8,deficit:-1.2,downturn:-1.8,selloff:-1.8,plunge:-2};
+
+function analyseText(text){
+  const words=text.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).filter(w=>w.length>2);
+  let score=0;const tagged=[];
+  words.forEach(w=>{
+    if(POS_WORDS[w]){score+=POS_WORDS[w];tagged.push({w,cls:'w-pos'});}
+    else if(NEG_WORDS[w]){score+=NEG_WORDS[w];tagged.push({w,cls:'w-neg'});}
+    else tagged.push({w,cls:'w-neu'});
+  });
+  const norm=Math.max(-1,Math.min(1,score/Math.max(words.length*.3,1)));
+  return{score:norm,tagged,raw:score};
+}
+
+document.getElementById('analyseBtn').addEventListener('click',()=>{
+  const text=document.getElementById('inputText').value.trim();
+  if(!text)return;
+  const{score,tagged}=analyseText(text);
+  const area=document.getElementById('resultArea');
+  area.classList.add('show');
+
+  let label,color;
+  if(score>0.15){label='BULLISH';color='var(--green)';}
+  else if(score<-0.15){label='BEARISH';color='var(--red)';}
+  else{label='NEUTRAL';color='var(--muted2)';}
+
+  document.getElementById('sentLabel').textContent=label;
+  document.getElementById('sentLabel').style.color=color;
+  document.getElementById('sentScore').textContent=`Sentiment score: ${score.toFixed(3)}  |  Confidence: ${Math.abs(score*100).toFixed(0)}%`;
+
+  const neg=score<0?Math.abs(score)*50:0;
+  const pos=score>0?score*50:0;
+  const neu=100-neg-pos;
+  document.getElementById('barNeg').style.width=neg+'%';
+  document.getElementById('barNeu').style.width=neu+'%';
+  document.getElementById('barPos').style.width=pos+'%';
+
+  document.getElementById('wordBox').innerHTML=tagged.slice(0,50).map(t=>`<span class="${t.cls}">${t.w}</span> `).join('');
+});
+
+document.querySelectorAll('.example-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.getElementById('inputText').value=btn.dataset.text;
+    document.getElementById('analyseBtn').click();
+  });
+});
+
+// Model bars
+const models=[
+  {name:'LSTM',pct:77,color:'#38bdf8'},
+  {name:'FinBERT',pct:74,color:'#38bdf8'},
+  {name:'RoBERTa',pct:72,color:'#38bdf8'},
+  {name:'DistilBERT',pct:70,color:'#38bdf8'},
+  {name:'SVM',pct:65,color:'#f59e0b'},
+  {name:'Naive Bayes',pct:62,color:'#f59e0b'},
+  {name:'VADER',pct:55,color:'#64748b'},
+];
+const container=document.getElementById('modelBars');
+models.forEach(m=>{
+  const row=document.createElement('div');
+  row.className='model-row';
+  row.innerHTML=`<span class="model-name">${m.name}</span>
+    <div class="model-track"><div class="model-fill" style="width:0%;background:${m.color}">${m.pct}%</div></div>
+    <span class="model-pct" style="color:${m.color}">${m.pct}%</span>`;
+  container.appendChild(row);
+  setTimeout(()=>{row.querySelector('.model-fill').style.width=m.pct+'%';},100+models.indexOf(m)*120);
+});
+</script>
+</body>
+</html>
